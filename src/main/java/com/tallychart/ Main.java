@@ -2,6 +2,7 @@ package com.tallychart;
 
 import com.tallychart.utils.ExcelUtils;
 import com.tallychart.utils.QuestionGenerator;
+import com.tallychart.utils.Question;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
