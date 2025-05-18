@@ -13,7 +13,7 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        // Close Excel if it's open
+        // Ensure Excel is not open before writing
         ExcelUtils.closeExcel();
 
         // Create the report folder if it doesn't exist
@@ -22,22 +22,31 @@ public class Main {
             reportFolder.mkdirs();
         }
 
-        // Ask the user how many questions they want to generate
+        // Ask the user for the number of questions to generate
         Scanner scanner = new Scanner(System.in);
-        System.out.print("How many questions do you want to generate? (up to 1000) ");
-        int numQuestions = scanner.nextInt();
+        int numQuestions = 0;
 
-        // Generate the specified number of questions (up to 1000)
-        List<Question> questions = QuestionGenerator.generateQuestions(numQuestions);
-
-        // Export the DataFrame to an Excel file in the report folder
-        String excelPath = "src/resources/report/tally_chart_options.xlsx";
-        try (Workbook workbook = new XSSFWorkbook()) {
-            ExcelUtils.saveToExcel(questions, excelPath, workbook);
-        } catch (IOException e) {
-            e.printStackTrace();
+        while (numQuestions <= 0 || numQuestions > 1000) {
+            System.out.print("How many questions do you want to generate? (1 to 1000): ");
+            if (scanner.hasNextInt()) {
+                numQuestions = scanner.nextInt();
+            } else {
+                scanner.next(); // Clear invalid input
+            }
         }
 
-        System.out.println("The tally chart options have been successfully exported to " + excelPath);
+        // Generate the questions
+        List<Question> questions = QuestionGenerator.generateQuestions(numQuestions);
+
+        // Define the output Excel path
+        String excelPath = "src/resources/report/Intern_0901_110_Asign1_Sanjivani.xlsx";
+
+        // Save the questions to Excel
+        try (Workbook workbook = new XSSFWorkbook()) {
+            ExcelUtils.saveToExcel(questions, excelPath, workbook);
+            System.out.println("The tally chart questions have been successfully exported to: " + excelPath);
+        } catch (IOException e) {
+            System.err.println("Error writing Excel file: " + e.getMessage());
+        }
     }
 }
