@@ -26,11 +26,11 @@ public class ExcelUtils {
 
         // 3. Header Row
         String[] headers = {
-                "Sr No", "Question Type", "Answer Type", "Topic No.", "Question",
-                "Correct Answer ", "Correct Answer 1", "Correct Answer2", "Correct Answer 3",
-                "Wrong Answer 1", "Wrong Answer 2", "Wrong Answer 3",
-                "Time", "DoD", " Question Images",
-                "Contributor Email", "Solution", "Solution(image/video/)", "Variation Number"
+                "Sr. No", "Question Type", "Answer Type", "Topic Number", "Question (Text Only)",
+                "Correct Answer 1", "Correct Answer 2", "Correct Answer 3", "Correct Answer 4", "Wrong Answer 1",
+                "Wrong Answer 2", "Wrong Answer 3", "Time in seconds", "Difficulty Level",
+                "Question (Image/ Audio/ Video)", "Contributor's Registered mailId", "Solution (Text Only)",
+                "Solution (Image/ Audio/ Video)", "Variation Number"
         };
 
         Row headerRow = sheet.createRow(0);
@@ -53,26 +53,30 @@ public class ExcelUtils {
         // Set column widths as per your spec
         for (int i = 0; i < headers.length; i++) {
             switch (i) {
-                case 0: case 1: case 2: case 3:             // A–D
-                case 6: case 7: case 8:                     // G–I (Correct Ans 2, 3, 4)
-                case 12: case 13: case 14: case 15:         // M–P (Time, DoD, etc.)
-                case 17: case 18:                           // R–S (Solution Media, Var No.)
-                    sheet.setColumnWidth(i, 1 * 256);
+                case 0: case 1: case 2: case 3:             // A–D (Meta fields)
+                case 6: case 7: case 8:                     // G–I (Correct Ans 2–4)
+                case 13: case 14: case 15:                  // N–P (DoD, etc.)
+                    sheet.setColumnWidth(i, 2 * 256);
+                    break;
+                case 12: // M (Time)
+                case 17: // R (Solution Media)
+                case 18: // S (Variation Number)
+                    sheet.setColumnWidth(i, 4 * 256);
                     break;
                 case 4: // E (Question)
-                    sheet.setColumnWidth(i, 60 * 256);
+                    sheet.setColumnWidth(i, 40 * 256);
                     break;
                 case 5: // F (Correct Answer)
-                    sheet.setColumnWidth(i, 16 * 256);
+                    sheet.setColumnWidth(i, 10 * 256);
                     break;
                 case 9: case 10: case 11: // J–L (Wrong Answers)
-                    sheet.setColumnWidth(i, 160 * 256);
+                    sheet.setColumnWidth(i, 13 * 256);
                     break;
                 case 16: // Q (Solution)
-                    sheet.setColumnWidth(i, 160 * 256);
+                    sheet.setColumnWidth(i, 40 * 256);
                     break;
                 default:
-                    sheet.setColumnWidth(i, 10 * 256); // Fallback/default
+                    sheet.setColumnWidth(i, 5 * 256); // Default for any overflow columns
                     break;
             }
         }

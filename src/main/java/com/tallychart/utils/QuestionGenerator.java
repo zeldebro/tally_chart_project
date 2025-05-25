@@ -1,25 +1,54 @@
 package com.tallychart.utils;
-
+import java.util.stream.Collectors;
 import java.util.*;
-
 public class QuestionGenerator {
 
-    private static final String[] FLOWER_IMAGES = {
-            "Rose.png", "Lotus2.png", "Sunflower.png", "Marigold.png", "Jasmine.png",
-            "Hibiscus.png", "Lily1.png", "Periwinkle.png", "Gulmohar.png", "Champa.png", "Lavender.png"
+    private static final String[] ITEM_IMAGES = {
+            "0901_110_biscuit.png",
+            "0901_110_cadbury.png",
+            "0901_110_chocolate.png",
+            "0901_110_coconut toffee.png",
+            "0901_110_cream biscuit.png",
+            "0901_110_cupcake.png",
+            "0901_110_donut.png",
+            "0901_110_fruit jelly canday.png",
+            "0901_110_icecrem.png",
+            "0901_110_lolipop.png",
+            "0901_110_pestry.png",
+            "0901_110_strawberry toffee.png"
     };
 
-    private static final String[] FLOWER_NAMES_ENGLISH = {
-            "Rose", "Lotus", "Sunflower", "Marigold", "Jasmine",
-            "Hibiscus", "Lily", "Periwinkle", "Gulmohar", "Champa", "Lavender"
+    private static final String[] ITEM_NAMES_ENGLISH = {
+            "Biscuit",
+            "Cadbury",
+            "Chocolate",
+            "Coconut Toffee",
+            "Cream Biscuit",
+            "Cupcake",
+            "Donut",
+            "Fruit Jelly Candy",
+            "Ice Cream",
+            "Lollipop",
+            "Pastry",
+            "Strawberry Toffee"    };
+
+    private static final String[] ITEM_NAMES_MARATHI = {
+            "बिस्किट",
+            "कॅडबरी",
+            "चॉकलेट",
+            "नारळ टॉफी",
+            "क्रीम बिस्किट",
+            "कप केक",
+            "डोनट",
+            "फ्रुट जेली टॉफी",
+            "आईस्क्रीम",
+            "लॉलीपॉप",
+            "पेस्ट्री",
+            "स्ट्रॉबेरी टॉफी"
     };
 
-    private static final String[] FLOWER_NAMES_MARATHI = {
-            "गुलाब", "कमळ", "सूर्यफूल", "झेंडू", "मोगरा",
-            "जास्वंद", "कमळजाई", "सदाफुली", "गुलमोहर", "चंपा", "लव्हेंडर"
-    };
 
-    private static final String[] OPTION_LABELS = {"A", "B", "C", "D"};
+
     private static final Random rand = new Random();
 
     public static List<Question> generateQuestions(int count) {
@@ -33,160 +62,205 @@ public class QuestionGenerator {
     private static Question generateQuestion(String srNo) {
         Set<Integer> uniqueIndices = new LinkedHashSet<>();
         while (uniqueIndices.size() < 3) {
-            uniqueIndices.add(rand.nextInt(FLOWER_IMAGES.length));
+            uniqueIndices.add(rand.nextInt(ITEM_IMAGES.length));
         }
         Integer[] indices = uniqueIndices.toArray(new Integer[0]);
 
         int[] counts = new int[3];
         for (int i = 0; i < 3; i++) {
-            counts[i] = rand.nextInt(4) + 2; // 2 to 5
+            counts[i] = rand.nextInt(4) + 2;
         }
 
-        String correctOption = buildImageOption(indices, counts, true);
-        List<String> wrongOptions = generateUniqueWrongOptions(correctOption, indices, counts);
+        StringBuilder questionHTML = new StringBuilder();
+        questionHTML.append("Observe the following table of items. Which tally chart among the options is correct?<br>")
+                .append("खाली दिलेल्या चित्रावरून ताळ्यांच्या खुणांचा तक्ता तयार केला असता, पुढील पैकी कोणता तक्ता बरोबर आहे?<br>");
 
-        List<String> options = new ArrayList<>(wrongOptions);
-        options.add(correctOption);
-        Collections.shuffle(options);
+        questionHTML.append("<table border='2' style='border-collapse: collapse; text-align: center; width: 100%;'>")
+                .append("<tr><th>Item Name/<br>वस्तूचे नाव</th><th>Items/<br>वस्तूंची संख्या</th></tr>");
+        for (int i = 0; i < 3; i++) {
+            questionHTML.append("<tr border='2' style='height: 70px;'><td>")
+                    .append(ITEM_NAMES_ENGLISH[indices[i]]).append(" /<br> ").append(ITEM_NAMES_MARATHI[indices[i]]).append("</td><td>");
+            for (int j = 0; j < counts[i]; j++) {
+                questionHTML.append("<img src='https://portal.coepvlab.ac.in/VirtualMathsLab/media/")
+                        .append(ITEM_IMAGES[indices[i]].replace(" ", "%20"))
+                        .append("' style='width: 50px; height: 70px; margin:3px;float: left;'/>");
+            }
+            questionHTML.append("</td></tr>");
+        }
+        questionHTML.append("</table><br><br>");
 
-        int correctIndex = options.indexOf(correctOption);
-        String correctLabel = OPTION_LABELS[correctIndex];
-
-        String questionText = "Observe the tally chart below showing the number of different flowers using images.<br>" +
-                "Which option shows the same number of flowers and tally marks?<br>#खाली फुलांची संख्या आणि टॅली मार्क दाखवणारा चार्ट पाहा. " +
-                "खालील पर्यायांपैकी कोणता फुलांची संख्या आणि टॅली मार्क योग्य दाखवतो?<br>";
+        String correctOptionHTML = buildTallyTable(indices, counts);
+        List<String> labels = Arrays.asList("Option / पर्याय A", "Option / पर्याय B", "Option / पर्याय C", "Option / पर्याय D");
+        List<String> options = new ArrayList<>();
+        int correctIndex = rand.nextInt(4) ;
+        for (int i = 0; i < 4; i++) {
+            if (i == correctIndex) {
+                options.add("<b>" + labels.get(i) + "</b><br>" + correctOptionHTML);
+            } else {
+                options.add("<b>" + labels.get(i) + "</b><br>" + buildWrongOptionTable(indices, counts));
+            }
+        }
 
         return new Question(
-                srNo,
-                "Text",
-                "1",
-                "03",
-                questionText,
-                options.get(correctIndex),
-                "",
-                "",
-                "",
+                srNo, "Text", "1", "03", questionHTML.toString(),
+                options.get(correctIndex), "", "", "",
                 options.get(getWrongIndex(0, correctIndex)),
                 options.get(getWrongIndex(1, correctIndex)),
                 options.get(getWrongIndex(2, correctIndex)),
-                "150",
-                "3",
-                "",
-                "sanjivanibabalsure@gmail.com",
-                generateSolutionExplanation(indices, counts, correctLabel, options),
-                "",
-                110
+                "150", "3", "", "sanjivanibabalsure@gmail.com",
+                generateSolutionExplanation(indices, counts, labels.get(correctIndex)), "", 110
         );
     }
 
-    private static String buildImageOption(Integer[] indices, int[] counts, boolean shuffle) {
-        List<Integer> order = new ArrayList<>();
-        for (int i = 0; i < indices.length; i++) order.add(i);
-        if (shuffle) Collections.shuffle(order);
+    private static int getWrongIndex(int i, int correctIndex) {
+        List<Integer> indices = new ArrayList<>(Arrays.asList(0, 1, 2, 3));
+        indices.remove(Integer.valueOf(correctIndex));
+        return indices.get(i);
+    }
 
+    private static String buildTallyTable(Integer[] indices, int[] counts) {
         StringBuilder sb = new StringBuilder();
-        sb.append("<table border='1' style='border-collapse: collapse; text-align: center; width:100%;'>")
-                .append("<tr><th style='font-weight:bold; text-align:center; white-space: normal;'>Flower</th><th style='font-weight:bold; text-align:center; white-space: normal;'>Tally Marks</th></tr>");
+        sb.append("<table border='2' style='border-collapse: collapse; text-align: center; width:100%;'>")
+                .append("<tr><th>Item Name/<br>वस्तूचे नाव</th><th>Items/<br>वस्तूंची संख्या</th><th>Tally Marks/<br>ताळ्यांच्या खुणा</th></tr>");
+        for (int i = 0; i < 3; i++) {
+            sb.append("<tr border='2'style='height: 70px;'><td>")
+                    .append(ITEM_NAMES_ENGLISH[indices[i]]).append(" /<br> ").append(ITEM_NAMES_MARATHI[indices[i]])
+                    .append("</td><td><div style='white-space: nowrap;'>");
 
-        for (int i : order) {
-            sb.append("<tr style='height: 60px;'><td style='text-align:center;'>");
             for (int j = 0; j < counts[i]; j++) {
-                sb.append("<img src='tally_chart_project/imges/")  // KEEPING 'imges' as you asked
-                        .append(FLOWER_IMAGES[indices[i]])
-                        .append("' width='30' height='30' style='margin:2px;' />");
+                sb.append("<img src='https://portal.coepvlab.ac.in/VirtualMathsLab/media/")
+                        .append(ITEM_IMAGES[indices[i]].replace(" ", "%20"))
+                        .append("' style='width: 50px; height: 70px; margin:3px; float: left;' />");
             }
-            sb.append("</td><td style='text-align:center;'>");
-            for (int k = 0; k < counts[i]; k++) {
-                sb.append("|");
-            }
-            sb.append("</td></tr>");
+            sb.append("</div></td><td>").append(formatTally(counts[i])).append("</td></tr>");
         }
-
-        sb.append("</table>");
+        sb.append("</table><br>");
         return sb.toString();
     }
 
-    private static List<String> generateUniqueWrongOptions(String correctOption, Integer[] indices, int[] counts) {
-        Set<String> uniqueOptions = new HashSet<>();
-        uniqueOptions.add(correctOption);
-
-        List<String> wrongOptions = new ArrayList<>();
-        int tries = 0;
-
-        while (wrongOptions.size() < 3 && tries < 50) {
-            int[] modifiedCounts = new int[counts.length];
-            for (int i = 0; i < counts.length; i++) {
-                int flowerCount = counts[i];
-                int wrongTally = flowerCount;
-                while (wrongTally == flowerCount) {
-                    int change = rand.nextBoolean() ? 1 : -1;
-                    wrongTally = flowerCount + change;
-                    if (wrongTally < 1) wrongTally = flowerCount + 1;
-                }
-                modifiedCounts[i] = wrongTally;
-            }
-
-            String option = buildImageOption(indices, modifiedCounts, true);
-
-            if (uniqueOptions.add(option)) {
-                wrongOptions.add(option);
-            }
-
-            tries++;
+    private static String formatTally(int count) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<span style='font-size:25px; font-weight:10px; gap:2px;'>");
+        for (int i = 1; i <= count; i++) {
+            sb.append("|");
+            if (i % 5 == 0 && i != count) sb.append("|");
         }
-
-        return wrongOptions;
+        sb.append("</span>");
+        return sb.toString();
     }
 
-    private static int getWrongIndex(int skip, int correctIndex) {
-        int found = 0;
-        for (int i = 0; i < 4; i++) {
-            if (i != correctIndex) {
-                if (found == skip) return i;
-                found++;
+    private static String buildWrongOptionTable(Integer[] correctIndices, int[] correctCounts) {
+        Set<Integer> usedIndices = new HashSet<>(Arrays.asList(correctIndices));
+        List<Integer> selectedIndices = new ArrayList<>();
+
+        while (selectedIndices.size() < 3) {
+            int idx = rand.nextInt(ITEM_IMAGES.length);
+            if (!usedIndices.contains(idx) && !selectedIndices.contains(idx)) {
+                selectedIndices.add(idx);
             }
         }
-        return -1;
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("<table border='2' style='border-collapse: collapse; text-align: center; width:100%;'>")
+                .append("<tr><th>Item Name/<br>वस्तूचे नाव</th><th>Items/<br>वस्तूंची संख्या</th><th>Tally Marks/<br>ताळ्यांच्या खुणा</th></tr>");
+
+        for (int i = 0; i < 3; i++) {
+            int count = rand.nextInt(4) + 2;
+            int wrongTally = getMismatchTally(count);
+            sb.append("<tr style='height: 70px;'><td>")
+                    .append(ITEM_NAMES_ENGLISH[selectedIndices.get(i)]).append(" /<br> ")
+                    .append(ITEM_NAMES_MARATHI[selectedIndices.get(i)])
+                    .append("</td><td><div style='white-space: nowrap;'>");
+            for (int j = 0; j < count; j++) {
+                sb.append("<img src='https://portal.coepvlab.ac.in/VirtualMathsLab/media/")
+                        .append(ITEM_IMAGES[selectedIndices.get(i)].replace(" ", "%20"))
+                        .append("' style='width: 50px; height: 70px; margin:3px;float: left;' />");
+            }
+            sb.append("</div></td><td>").append(formatTally(wrongTally)).append("</td></tr>");
+        }
+        sb.append("</table><br>");
+        return sb.toString();
     }
 
-    private static String generateSolutionExplanation(Integer[] indices, int[] counts, String correctLabel, List<String> options) {
+    private static int getMismatchTally(int correctCount) {
+        List<Integer> options = new ArrayList<>();
+        for (int i = 1; i <= 6; i++) {
+            if (i != correctCount) options.add(i);
+        }
+        return options.get(rand.nextInt(options.size()));
+    }
+
+
+
+    private static List<Integer> getUniqueIndices(int count) {
+        Set<Integer> set = new LinkedHashSet<>();
+        while (set.size() < count) {
+            set.add(rand.nextInt(ITEM_IMAGES.length));
+        }
+        return new ArrayList<>(set);
+    }
+
+    private static String generateSolutionExplanation(Integer[] indices, int[] counts, String optionLabel) {
+        String optionLetter = optionLabel.substring(optionLabel.length() - 1); // Extract "A", "B", etc.
+        String englishLabel = "Option " + optionLetter;
+        String marathiLabel = "पर्याय " + optionLetter;
+        String tallyChartLabel = "" + optionLetter;
+
         StringBuilder sb = new StringBuilder();
 
-        sb.append("Ans: ").append(correctLabel).append("<br>");
-        sb.append("The table shows flowers and their corresponding tally marks.<br>#")
-                .append("सदर तक्ता फुलांची संख्या आणि त्यांच्या टॅली मार्क दर्शवतो.<br><br>");
 
-        sb.append("<b>Correct Option:</b><br>");
-        sb.append("<b>Option ").append(correctLabel).append(" (Correct)</b><br>");
-        sb.append(options.get(OPTION_LABELS_TO_INDEX(correctLabel))).append("<br><br>");
+        // Tally chart
+        sb.append("<b>Option:</b><br>")
+                .append("Answer : <b>").append(englishLabel).append(".</b><br><br>")
+                .append(buildTallyTable(indices, counts)).append("<br><br><br>");
 
-        sb.append("<b>Other Options:</b><br>");
-        for (int i = 0; i < 4; i++) {
-            String label = OPTION_LABELS[i];
-            if (!label.equals(correctLabel)) {
-                sb.append("<b>Option ").append(label).append(" (Wrong)</b><br>");
-                sb.append(options.get(i)).append("<br><br>");
-            }
+
+        // English Explanation
+        sb.append("Ans : <b>").append(englishLabel).append(".</b><br>");
+        sb.append("The objects shown in the picture are ")
+                .append(ITEM_NAMES_ENGLISH[indices[0]]).append(", ")
+                .append(ITEM_NAMES_ENGLISH[indices[1]]).append(", and ")
+                .append(ITEM_NAMES_ENGLISH[indices[2]]).append(".<br>");
+        sb.append("We will can make one tally mark for each item.<br>");
+        sb.append("In the first column, we will show names of the the items.<br>");
+        sb.append("In the second column, we will show pictures of the the items.<br>");
+        sb.append("In the third column, we will place tally marks corresponding to each item.<br>");
+        for (int i = 0; i < 3; i++) {
+            sb.append("There are $").append(counts[i]).append("$ ")
+                    .append(ITEM_NAMES_ENGLISH[indices[i]])
+                    .append(", so we show ").append(counts[i])
+                    .append(" items and place ").append(counts[i]).append(" tally marks in that row.<br>");
         }
+        sb.append("Now, we compare this table with all the option tables one by one.<br>");
+        sb.append("Tally marks as well as objects in this table match only with the table in option $")
+                .append(tallyChartLabel).append("$.<br></b>");
+        sb.append("In all other tables, either the tally marks don't match or the objects don't match.<br>");
+        sb.append("Hence, option $").append(tallyChartLabel).append("$ is the answer.<br>");
 
-        sb.append("Now, we will compare this table with all the option tables, one by one.<br>");
-        sb.append("Tally marks in this table match only with table in option ").append(correctLabel).append(".<br>");
-        sb.append("In all other tables, either the tally marks don't match or the images don't match.<br>");
-        sb.append("Hence, option ").append(correctLabel).append(" is the answer.<br>#");
-
-        sb.append("उत्तर: ").append(correctLabel).append(".<br>");
-        sb.append("तक्त्यामधील वस्तू आणि त्यांच्या टॅली खुणा फक्त पर्याय ").append(correctLabel).append(" मध्ये बरोबर आहेत.<br>");
-        sb.append("म्हणून, पर्याय ").append(correctLabel).append(" हे योग्य उत्तर आहे.<br>");
+        // Marathi Answer header
+        sb.append("उत्तर : <b>") .append(marathiLabel).append(".</b><br>");
+        sb.append("दिलेल्या चित्रात दाखवलेल्या वस्तू ")
+                .append(ITEM_NAMES_MARATHI[indices[0]]).append(", ")
+                .append(ITEM_NAMES_MARATHI[indices[1]]).append(", आणि ")
+                .append(ITEM_NAMES_MARATHI[indices[2]]).append(" आहेत.<br>");
+        sb.append("प्रत्येक वस्तूसाठी आपण एक ताळ्याची खुण करायची आहेे.<br>");
+        sb.append("पहिल्या रकान्यात वस्तूचे नाव लिहू.<br>");
+        sb.append("दुसऱ्या रकान्यात वस्तू दाखवायच्या आहेत.<br>");
+        sb.append("त्या ओळीतील तिसऱ्या रकान्यात प्रत्येक वस्तू साठी एक ताळ्याची खुण करू.<br>");
+        sb.append("पहिल्या ओळीत $").append(counts[0]).append("$ ").append(ITEM_NAMES_MARATHI[indices[0]])
+                .append(" आहेत, म्हणून या ओळीत $").append(counts[0]).append("$ ताळ्याच्या खुणा करू.<br>");
+        sb.append("दुसऱ्या ओळीत ").append(ITEM_NAMES_MARATHI[indices[1]])
+                .append(" साठी, $").append(counts[1]).append("$ ताळ्याच्या खुणा करू.<br>");
+        sb.append("तिसऱ्या ओळीत ").append(ITEM_NAMES_MARATHI[indices[2]])
+                .append("आहेत, म्हणून या ओळीत $").append(counts[2]).append("$ ताळ्याच्या खुणा करू.<br>");
+        sb.append("आता तयार झालेल्या तक्त्याची दिलेल्या तक्त्यांशी त्यातील वस्तू आणि ताळ्यांच्या खुणा यासाठी तुलना करू.<br>");
+        sb.append("अशी तुलना केली असता फक्त पर्याय $").append(tallyChartLabel).append("$ मधील ताळ्याच्या तक्ता आपण तयार केलेल्या तक्त्याशी जुळतो.<br>");
+        sb.append("कारण त्यातील वस्तू आणि त्या साठीच्या ताळ्याच्या खुणा दिलेल्या माहितीशी तंतोतंत जुळतात.<br>");
+        sb.append("इतर सर्व पर्यायांमध्ये काही ठिकाणी ताळ्याच्या खुणा जुळत नाहीत, तर काही ठिकाणी वस्तू वेगळ्या आहेत.<br>");
+        sb.append("म्हणून, पर्याय $").append(tallyChartLabel).append("$ हे योग्य उत्तर आहे.<br>");
 
         return sb.toString();
-    }
-
-    private static int OPTION_LABELS_TO_INDEX(String label) {
-        for (int i = 0; i < OPTION_LABELS.length; i++) {
-            if (OPTION_LABELS[i].equals(label)) {
-                return i;
-            }
-        }
-        return -1;
     }
 }
+
+
